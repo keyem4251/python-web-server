@@ -1,8 +1,8 @@
 import socket
-from serverthread import ServerThread
+from modoki02.serverthread import ServerThread
 
 
-class Main:
+class Modoki02Main:
 
     @staticmethod
     def main():
@@ -25,4 +25,4 @@ class Main:
 
 
 if __name__ == "__main__":
-    Main().main()
+    Modoki02Main().main()

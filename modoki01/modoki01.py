@@ -52,7 +52,7 @@ class Modoki01:
 
         # レスポンスボディを返す
         root = os.getcwd()
-        static_dir = f"{root}/static"
+        static_dir = f"{root}/../static"
         with open(static_dir+path, "rb") as f:
             content = f.read()
             response += content.decode()
