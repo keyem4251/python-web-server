@@ -12,7 +12,7 @@ class Main:
         # bind the socket to a public host, and a well-known port
         server_socket.bind(("localhost", 8080))
         # become a server socket
-        server_socket.listen(1)
+        server_socket.listen(10)
 
         while True:
             print("クライントからの接続を待ちます。")
