@@ -60,10 +60,21 @@ class WSGIApplication:
         response_headers.append(("Server", "Modoki/0.3"))
         response_headers.append(("Connection", "close"))
 
-        start_response('200 OK', response_headers)
+        response_code = "200 OK"
+        content = b""
 
         # envを見てファイルを開いてレスポンスボディを返す
         root = os.getcwd()
         static_dir = f"{root}/static"
-        content = self.get_file_content(static_dir+abspath)
+
+        try:
+            content = self.get_file_content(static_dir+abspath)
+        except FileNotFoundError:
+            response_code = "404 File not Found"
+            not_fount_html = f"{root}/static/404.html"
+            content = self.get_file_content(not_fount_html)
+        except Exception:
+            response_code = "500 Internal Server Error"
+
+        start_response(response_code, response_headers)
         return [content]

@@ -8,7 +8,6 @@ from wsgiapplication import WSGIApplication
 
 
 class ServerThread(Thread):
-
     separator = "\r\n"
     response_line: str
     response_headers: List[tuple]
@@ -22,8 +21,7 @@ class ServerThread(Thread):
         return b"\r\n" + b"".join(body_bytes_list)
 
     def get_response_headers(self) -> bytes:
-        headers = []
-        headers.append(f"HTTP/1.1 {self.response_line}")
+        headers = [f"HTTP/1.1 {self.response_line}"]
         for response_header in self.response_headers:
             headers.append(f"{response_header[0]}: {response_header[1]}")
         return "\r\n".join(headers).encode()
