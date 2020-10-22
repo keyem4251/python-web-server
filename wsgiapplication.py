@@ -1,6 +1,6 @@
 import os
 import datetime
-from typing import Iterable
+from typing import Iterable, List
 
 
 class WSGIApplication:
@@ -27,6 +27,14 @@ class WSGIApplication:
         with open(path, "rb") as f:
             return f.read()
 
+    def create_response_headers(self, ext: str) -> List:
+        response_headers = []
+        response_headers.append(('Content-type', self.get_content_type(ext)))
+        response_headers.append(("Date", self.get_date_string_utc()))
+        response_headers.append(("Server", "Modoki/0.3"))
+        response_headers.append(("Connection", "close"))
+        return response_headers
+
     def application(self, env: dict, start_response) -> Iterable[bytes]:
         """
                 env:
@@ -51,14 +59,10 @@ class WSGIApplication:
                         ]
                     )
         """
-        response_headers = []
         # Content-typeはenvから作る
         abspath = env.get("PATH_INFO")
         ext = abspath.split(".")[1]
-        response_headers.append(('Content-type', self.get_content_type(ext)))
-        response_headers.append(("Date", self.get_date_string_utc()))
-        response_headers.append(("Server", "Modoki/0.3"))
-        response_headers.append(("Connection", "close"))
+        response_headers = self.create_response_headers(ext)
 
         response_code = "200 OK"
         content = b""
