@@ -35,50 +35,26 @@ class WSGIApplication:
         response_headers.append(("Connection", "close"))
         return response_headers
 
-    def application(self, env: dict, start_response) -> Iterable[bytes]:
-        """
-                env:
-                    リクエストヘッダーの情報がdictで渡されてくる
-                    refs) https://www.python.org/dev/peps/pep-3333/#environ-variables
-                    例）
-                    env = {
-                        "HTTP_METHOD": "POST",
-                        "PATH_INFO": "/index.html"
-                    }
-        ​
-                start_response:
-                    レスポンスヘッダーの内容を、WSGIサーバーへ伝えるための関数(or Callable)。
-                    WSGIアプリケーション内で一度だけコールする。
-                    コールするときは、第一引数にレスポンスライン、第２引数にレスポンスヘッダーを渡してコールする。
-                    例）
-                    start_response(
-                        '200 OK',
-                        [
-                            ('Content-type', 'text/plain; charset=utf-8'),
-                            ('Connection', 'Closed')
-                        ]
-                    )
-        """
-        print(f"env: {env}")
-        abspath = env.get("PATH_INFO")
-        response_code = "200 OK"
-        content = b""
-
-        # envを見てファイルを開いてレスポンスボディを返す
+    def create_response_code_and_body(self, abspath: str):
         root = os.getcwd()
         static_dir = f"{root}/static"
 
         try:
             content = self.get_file_content(static_dir+abspath)
+            return "200 OK", [content]
         except FileNotFoundError:
-            response_code = "404 File not Found"
             not_fount_html = "/404.html"
             content = self.get_file_content(static_dir+not_fount_html)
+            return "404 File not Found", [content]
         except Exception:
-            response_code = "500 Internal Server Error"
+            return "500 Internal Server Error", [b""]
+
+    def application(self, env: dict, start_response) -> Iterable[bytes]:
+        abspath = env.get("PATH_INFO")
+        response_code, response_body = self.create_response_code_and_body(abspath)
 
         ext = abspath.split(".")[1]
         response_headers = self.create_response_headers(ext)
 
         start_response(response_code, response_headers)
-        return [content]
+        return response_body
