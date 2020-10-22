@@ -59,11 +59,8 @@ class WSGIApplication:
                         ]
                     )
         """
-        # Content-typeはenvから作る
+        print(f"env: {env}")
         abspath = env.get("PATH_INFO")
-        ext = abspath.split(".")[1]
-        response_headers = self.create_response_headers(ext)
-
         response_code = "200 OK"
         content = b""
 
@@ -75,10 +72,13 @@ class WSGIApplication:
             content = self.get_file_content(static_dir+abspath)
         except FileNotFoundError:
             response_code = "404 File not Found"
-            not_fount_html = f"{root}/static/404.html"
-            content = self.get_file_content(not_fount_html)
+            not_fount_html = "/404.html"
+            content = self.get_file_content(static_dir+not_fount_html)
         except Exception:
             response_code = "500 Internal Server Error"
+
+        ext = abspath.split(".")[1]
+        response_headers = self.create_response_headers(ext)
 
         start_response(response_code, response_headers)
         return [content]
