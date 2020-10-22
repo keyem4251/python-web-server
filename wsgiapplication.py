@@ -33,10 +33,10 @@ class WSGIApplication:
                     リクエストヘッダーの情報がdictで渡されてくる
                     refs) https://www.python.org/dev/peps/pep-3333/#environ-variables
                     例）
-                    env = [
+                    env = {
                         "HTTP_METHOD": "POST",
                         "PATH_INFO": "/index.html"
-                    ]
+                    }
         ​
                 start_response:
                     レスポンスヘッダーの内容を、WSGIサーバーへ伝えるための関数(or Callable)。
@@ -66,5 +66,4 @@ class WSGIApplication:
         root = os.getcwd()
         static_dir = f"{root}/static"
         content = self.get_file_content(static_dir+abspath)
-        print(f"content: {content}")
         return [content]
