@@ -38,19 +38,18 @@ class ServerThread(Thread):
 
             method = lines[0].split(" ")[0]
             abspath = os.path.abspath(lines[0].split(" ")[1])
-            ext = abspath.split(".")[1]
+            protocol = lines[0].split(" ")[2]
+            query_string = abspath.split("?")[1] if "?" in abspath else ""
 
             # envを作る
+            # content-type, content-lengthはhttpリクエストに入っている場合は取得する
             env = {
                 "REQUEST_METHOD": method,
-                "SCRIPT_NAME": "",
-                "SERVER_PROTOCOL": "HTTP/1.1",
+                "SERVER_PROTOCOL": protocol,
                 "PATH_INFO": abspath,
-                "QUERY_STRING": "",
-                "CONTENT_TYPE": ext,
+                "QUERY_STRING": query_string,
+                "CONTENT_TYPE": "",
                 "CONTENT_LENGTH": "",
-                'SERVER_PORT': "",
-                'REMOTE_ADDR': "",
                 "wsgi.input": "",
                 "wsgi.url_scheme": "http",
             }

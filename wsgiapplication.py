@@ -28,33 +28,32 @@ class WSGIApplication:
             return f.read()
 
     def create_response_headers(self, ext: str) -> List:
-        response_headers = []
-        response_headers.append(('Content-type', self.get_content_type(ext)))
-        response_headers.append(("Date", self.get_date_string_utc()))
-        response_headers.append(("Server", "Modoki/0.3"))
-        response_headers.append(("Connection", "close"))
+        response_headers = [
+            ('Content-type', self.get_content_type(ext)),
+            ("Date", self.get_date_string_utc()),
+            ("Server", "Modoki/0.3"),
+            ("Connection", "close")
+        ]
         return response_headers
 
-    def create_response_code_and_body(self, abspath: str):
+    def create_response(self, abspath: str):
         root = os.getcwd()
         static_dir = f"{root}/static"
-
-        try:
-            content = self.get_file_content(static_dir+abspath)
-            return "200 OK", [content]
-        except FileNotFoundError:
-            not_fount_html = "/404.html"
-            content = self.get_file_content(static_dir+not_fount_html)
-            return "404 File not Found", [content]
-        except Exception:
-            return "500 Internal Server Error", [b""]
-
-    def application(self, env: dict, start_response) -> Iterable[bytes]:
-        abspath = env.get("PATH_INFO")
-        response_code, response_body = self.create_response_code_and_body(abspath)
-
         ext = abspath.split(".")[1]
         response_headers = self.create_response_headers(ext)
 
+        try:
+            content = self.get_file_content(static_dir+abspath)
+            return "200 OK", [content], response_headers
+        except FileNotFoundError:
+            not_fount_html = "/404.html"
+            content = self.get_file_content(static_dir+not_fount_html)
+            return "404 File not Found", [content], response_headers
+        except Exception:
+            return "500 Internal Server Error", [b""], response_headers
+
+    def application(self, env: dict, start_response) -> Iterable[bytes]:
+        abspath = env.get("PATH_INFO")
+        response_code, response_body, response_headers = self.create_response(abspath)
         start_response(response_code, response_headers)
         return response_body
