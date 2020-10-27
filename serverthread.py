@@ -34,25 +34,33 @@ class ServerThread(Thread):
             print(request.decode())
             print("---------------------------------------------")
 
-            lines = request.decode().split(self.separator)
-
-            method = lines[0].split(" ")[0]
-            abspath = os.path.abspath(lines[0].split(" ")[1])
-            protocol = lines[0].split(" ")[2]
+            request_line, remain = request.decode().split(self.separator, maxsplit=1)
+            method, path, protocol = request_line.split(" ", maxsplit=2)
+            abspath = os.path.abspath(path)
             query_string = abspath.split("?")[1] if "?" in abspath else ""
+            headers, body = remain.split(self.separator, maxsplit=1)
+            headers_dict = dict()
+            for header in headers.split(self.separator):
+                key, value = header.split(": ")
+                headers_dict[key] = value
+            server_name, server_port = headers_dict.pop("Host", "").split(":")
 
             # envを作る
-            # content-type, content-lengthはhttpリクエストに入っている場合は取得する
             env = {
                 "REQUEST_METHOD": method,
                 "SERVER_PROTOCOL": protocol,
                 "PATH_INFO": abspath,
                 "QUERY_STRING": query_string,
-                "CONTENT_TYPE": "",
-                "CONTENT_LENGTH": "",
+                "CONTENT_TYPE": headers_dict.pop("Content-Type", ""),
+                "CONTENT_LENGTH": headers_dict.pop("Content-Length", ""),
+                "SERVER_NAME": server_name,
+                "SERVER_PORT": server_port,
                 "wsgi.input": "",
                 "wsgi.url_scheme": "http",
             }
+            for k, v in headers_dict.items():
+                key = "HTTP_" + k.upper().replace("-", "_")
+                env[key] = v
 
             def start_response(response_line: str, response_headers: List[tuple]):
                 self.response_line = response_line
