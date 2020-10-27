@@ -40,42 +40,56 @@ class ServerThread(Thread):
             abspath, query_string = abspath.split("?", maxsplit=1)
         return method, abspath, protocol, query_string
 
-    def build_env(self, request_str: str):
-        request_line, headers, body = self.parse_request(request_str)
-        method, abspath, protocol, query_string = self.parse_request_line(request_line)
-
+    def parse_headers(self, headers: str):
         headers_dict = dict()
         for header in headers.split(self.separator):
             if ": " in header:
                 key, value = header.split(": ")
                 headers_dict[key] = value
         server_name, server_port = headers_dict.pop("Host", "").split(":")
+        content_type = headers_dict.pop("Content-Type", "")
+        content_length = headers_dict.pop("Content-Length", "")
+        return server_name, server_port, content_type, content_length, headers_dict
+
+    def build_env(self, request_str: str):
+        request_line, headers, body = self.parse_request(request_str)
+        method, abspath, protocol, query_string = self.parse_request_line(request_line)
+        server_name, server_port, content_type, content_length, http_variables_dict = self.parse_headers(headers)
 
         env = {
             "REQUEST_METHOD": method,
             "SERVER_PROTOCOL": protocol,
             "PATH_INFO": abspath,
             "QUERY_STRING": query_string,
-            "CONTENT_TYPE": headers_dict.pop("Content-Type", ""),
-            "CONTENT_LENGTH": headers_dict.pop("Content-Length", ""),
+            "CONTENT_TYPE": content_type,
+            "CONTENT_LENGTH": content_length,
             "SERVER_NAME": server_name,
             "SERVER_PORT": server_port,
         }
-        for k, v in headers_dict.items():
+        for k, v in http_variables_dict:
             key = "HTTP_" + k.upper().replace("-", "_")
             env[key] = v
         return env
 
+    def build_response(self, body_bytes_list: Iterable[bytes]):
+        # WSGIApplicationのapplicationの戻り値を元にレスポンスを作る
+        output_bytes = b""
+        output_bytes += self.get_response_headers()
+        output_bytes += "\r\n".encode()
+        output_bytes += self.get_response_body(body_bytes_list)
+        return output_bytes
+
     def run(self) -> None:
         try:
-            # クライアントから受け取ったメッセージを代入
             request = self.socket.recv(4096)
             print("-------------- receive request --------------")
             print(request.decode())
             print("---------------------------------------------")
 
+            # requestを元にenvを作成
             env = self.build_env(request.decode())
 
+            # start_responseを定義
             def start_response(response_line: str, response_headers: List[tuple]):
                 self.response_line = response_line
                 self.response_headers = response_headers
@@ -83,13 +97,11 @@ class ServerThread(Thread):
             # WSGIApplication.applicationにわたす
             body_bytes_list: Iterable[bytes] = WSGIApplication().application(env, start_response)
 
-            # WSGIApplicationのapplicationの戻り値を元にレスポンスを作る
-            output_bytes = b""
-            output_bytes += self.get_response_headers()
-            output_bytes += "\r\n".encode()
-            output_bytes += self.get_response_body(body_bytes_list)
-            print(f"output_bytes: {output_bytes}")
-            self.socket.send(output_bytes)
+            response = self.build_response(body_bytes_list)
+            print("-------------- send response --------------")
+            print(response.decode())
+            print("---------------------------------------------")
+            self.socket.send(response)
 
         except Exception:
             print(traceback.format_exc())
