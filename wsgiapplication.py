@@ -1,6 +1,6 @@
 import os
 import datetime
-from typing import Iterable, List
+from typing import Iterable, List, Callable
 
 
 class WSGIApplication:
@@ -36,7 +36,8 @@ class WSGIApplication:
         ]
         return response_headers
 
-    def create_response(self, abspath: str):
+    def create_response(self, env: dict):
+        abspath = env.get("PATH_INFO")
         root = os.getcwd()
         static_dir = f"{root}/static"
         ext = abspath.split(".")[1]
@@ -44,16 +45,25 @@ class WSGIApplication:
 
         try:
             content = self.get_file_content(static_dir+abspath)
+            if b"$now" in content:
+                now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
+                content = content.replace(b"$now", now_bytes)
+            if b"$headers" in content:
+                headers_list = [f"{k}: {v}<br>\n".encode() for k, v in env.items()]
+                headers_bytes = b"".join(headers_list)
+                content = content.replace(b"$headers", headers_bytes)
+
             return "200 OK", [content], response_headers
         except FileNotFoundError:
             not_fount_html = "/404.html"
             content = self.get_file_content(static_dir+not_fount_html)
             return "404 File not Found", [content], response_headers
         except Exception:
-            return "500 Internal Server Error", [b""], response_headers
+            server_error_html = "/500.html"
+            content = self.get_file_content(static_dir + server_error_html)
+            return "500 Internal Server Error", [content], response_headers
 
-    def application(self, env: dict, start_response) -> Iterable[bytes]:
-        abspath = env.get("PATH_INFO")
-        response_code, response_body, response_headers = self.create_response(abspath)
+    def application(self, env: dict, start_response: Callable[[str, Iterable[tuple]], None]) -> Iterable[bytes]:
+        response_code, response_body, response_headers = self.create_response(env)
         start_response(response_code, response_headers)
         return response_body

@@ -37,12 +37,16 @@ class ServerThread(Thread):
             request_line, remain = request.decode().split(self.separator, maxsplit=1)
             method, path, protocol = request_line.split(" ", maxsplit=2)
             abspath = os.path.abspath(path)
-            query_string = abspath.split("?")[1] if "?" in abspath else ""
-            headers, body = remain.split(self.separator, maxsplit=1)
+            query_string = ""
+            if "?" in abspath:
+                abspath, query_string = abspath.split("?", maxsplit=1)
+
+            headers, body = remain.rsplit(self.separator, maxsplit=1)
             headers_dict = dict()
             for header in headers.split(self.separator):
-                key, value = header.split(": ")
-                headers_dict[key] = value
+                if ": " in header:
+                    key, value = header.split(": ")
+                    headers_dict[key] = value
             server_name, server_port = headers_dict.pop("Host", "").split(":")
 
             # envを作る
@@ -55,8 +59,6 @@ class ServerThread(Thread):
                 "CONTENT_LENGTH": headers_dict.pop("Content-Length", ""),
                 "SERVER_NAME": server_name,
                 "SERVER_PORT": server_port,
-                "wsgi.input": "",
-                "wsgi.url_scheme": "http",
             }
             for k, v in headers_dict.items():
                 key = "HTTP_" + k.upper().replace("-", "_")
