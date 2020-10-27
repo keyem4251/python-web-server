@@ -26,15 +26,24 @@ class ServerThread(Thread):
             headers.append(f"{response_header[0]}: {response_header[1]}")
         return "\r\n".join(headers).encode()
 
-    def build_env(self, request_str: str):
+    def parse_request(self, request_str: str):
         request_line, remain = request_str.split(self.separator, maxsplit=1)
+        headers, body = remain.rsplit(self.separator, maxsplit=1)
+        return request_line, headers, body
+
+    @staticmethod
+    def parse_request_line(request_line: str):
         method, path, protocol = request_line.split(" ", maxsplit=2)
         abspath = os.path.abspath(path)
         query_string = ""
         if "?" in abspath:
             abspath, query_string = abspath.split("?", maxsplit=1)
+        return method, abspath, protocol, query_string
 
-        headers, body = remain.rsplit(self.separator, maxsplit=1)
+    def build_env(self, request_str: str):
+        request_line, headers, body = self.parse_request(request_str)
+        method, abspath, protocol, query_string = self.parse_request_line(request_line)
+
         headers_dict = dict()
         for header in headers.split(self.separator):
             if ": " in header:
@@ -66,7 +75,7 @@ class ServerThread(Thread):
             print("---------------------------------------------")
 
             env = self.build_env(request.decode())
-            
+
             def start_response(response_line: str, response_headers: List[tuple]):
                 self.response_line = response_line
                 self.response_headers = response_headers
