@@ -26,6 +26,37 @@ class ServerThread(Thread):
             headers.append(f"{response_header[0]}: {response_header[1]}")
         return "\r\n".join(headers).encode()
 
+    def build_env(self, request_str: str):
+        request_line, remain = request_str.split(self.separator, maxsplit=1)
+        method, path, protocol = request_line.split(" ", maxsplit=2)
+        abspath = os.path.abspath(path)
+        query_string = ""
+        if "?" in abspath:
+            abspath, query_string = abspath.split("?", maxsplit=1)
+
+        headers, body = remain.rsplit(self.separator, maxsplit=1)
+        headers_dict = dict()
+        for header in headers.split(self.separator):
+            if ": " in header:
+                key, value = header.split(": ")
+                headers_dict[key] = value
+        server_name, server_port = headers_dict.pop("Host", "").split(":")
+
+        env = {
+            "REQUEST_METHOD": method,
+            "SERVER_PROTOCOL": protocol,
+            "PATH_INFO": abspath,
+            "QUERY_STRING": query_string,
+            "CONTENT_TYPE": headers_dict.pop("Content-Type", ""),
+            "CONTENT_LENGTH": headers_dict.pop("Content-Length", ""),
+            "SERVER_NAME": server_name,
+            "SERVER_PORT": server_port,
+        }
+        for k, v in headers_dict.items():
+            key = "HTTP_" + k.upper().replace("-", "_")
+            env[key] = v
+        return env
+
     def run(self) -> None:
         try:
             # クライアントから受け取ったメッセージを代入
@@ -34,36 +65,8 @@ class ServerThread(Thread):
             print(request.decode())
             print("---------------------------------------------")
 
-            request_line, remain = request.decode().split(self.separator, maxsplit=1)
-            method, path, protocol = request_line.split(" ", maxsplit=2)
-            abspath = os.path.abspath(path)
-            query_string = ""
-            if "?" in abspath:
-                abspath, query_string = abspath.split("?", maxsplit=1)
-
-            headers, body = remain.rsplit(self.separator, maxsplit=1)
-            headers_dict = dict()
-            for header in headers.split(self.separator):
-                if ": " in header:
-                    key, value = header.split(": ")
-                    headers_dict[key] = value
-            server_name, server_port = headers_dict.pop("Host", "").split(":")
-
-            # envを作る
-            env = {
-                "REQUEST_METHOD": method,
-                "SERVER_PROTOCOL": protocol,
-                "PATH_INFO": abspath,
-                "QUERY_STRING": query_string,
-                "CONTENT_TYPE": headers_dict.pop("Content-Type", ""),
-                "CONTENT_LENGTH": headers_dict.pop("Content-Length", ""),
-                "SERVER_NAME": server_name,
-                "SERVER_PORT": server_port,
-            }
-            for k, v in headers_dict.items():
-                key = "HTTP_" + k.upper().replace("-", "_")
-                env[key] = v
-
+            env = self.build_env(request.decode())
+            
             def start_response(response_line: str, response_headers: List[tuple]):
                 self.response_line = response_line
                 self.response_headers = response_headers

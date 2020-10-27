@@ -36,6 +36,17 @@ class WSGIApplication:
         ]
         return response_headers
 
+    @staticmethod
+    def fill_parameter(content: bytes):
+        if b"$now" in content:
+            now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
+            content = content.replace(b"$now", now_bytes)
+        if b"$headers" in content:
+            headers_list = [f"{k}: {v}<br>\n".encode() for k, v in env.items()]
+            headers_bytes = b"".join(headers_list)
+            content = content.replace(b"$headers", headers_bytes)
+        return content
+
     def create_response(self, env: dict):
         abspath = env.get("PATH_INFO")
         root = os.getcwd()
@@ -45,14 +56,7 @@ class WSGIApplication:
 
         try:
             content = self.get_file_content(static_dir+abspath)
-            if b"$now" in content:
-                now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
-                content = content.replace(b"$now", now_bytes)
-            if b"$headers" in content:
-                headers_list = [f"{k}: {v}<br>\n".encode() for k, v in env.items()]
-                headers_bytes = b"".join(headers_list)
-                content = content.replace(b"$headers", headers_bytes)
-
+            content = self.fill_parameter(content)
             return "200 OK", [content], response_headers
         except FileNotFoundError:
             not_fount_html = "/404.html"
