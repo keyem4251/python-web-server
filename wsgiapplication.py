@@ -1,9 +1,11 @@
 import os
 import datetime
+import traceback
 from typing import Iterable, List, Callable
 
 
 class WSGIApplication:
+    env: dict
     content_type = {
         "html": "text/html",
         "htm": "text/html",
@@ -36,19 +38,18 @@ class WSGIApplication:
         ]
         return response_headers
 
-    @staticmethod
-    def fill_parameter(content: bytes):
+    def fill_parameter(self, content: bytes):
         if b"$now" in content:
             now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
             content = content.replace(b"$now", now_bytes)
         if b"$headers" in content:
-            headers_list = [f"{k}: {v}<br>\n".encode() for k, v in env.items()]
+            headers_list = [f"{k}: {v}<br>\n".encode() for k, v in self.env.items()]
             headers_bytes = b"".join(headers_list)
             content = content.replace(b"$headers", headers_bytes)
         return content
 
-    def create_response(self, env: dict):
-        abspath = env.get("PATH_INFO")
+    def create_response(self):
+        abspath = self.env.get("PATH_INFO")
         root = os.getcwd()
         static_dir = f"{root}/static"
         ext = abspath.split(".")[1]
@@ -65,9 +66,11 @@ class WSGIApplication:
         except Exception:
             server_error_html = "/500.html"
             content = self.get_file_content(static_dir + server_error_html)
+            print("WsgiApplication 500 Error: " + traceback.format_exc()
             return "500 Internal Server Error", [content], response_headers
 
     def application(self, env: dict, start_response: Callable[[str, Iterable[tuple]], None]) -> Iterable[bytes]:
-        response_code, response_body, response_headers = self.create_response(env)
+        self.env = env
+        response_code, response_body, response_headers = self.create_response()
         start_response(response_code, response_headers)
         return response_body

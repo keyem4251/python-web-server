@@ -66,7 +66,7 @@ class ServerThread(Thread):
             "SERVER_NAME": server_name,
             "SERVER_PORT": server_port,
         }
-        for k, v in http_variables_dict:
+        for k, v in http_variables_dict.items():
             key = "HTTP_" + k.upper().replace("-", "_")
             env[key] = v
         return env
