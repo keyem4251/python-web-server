@@ -58,12 +58,17 @@ class WSGIApplication:
         try:
             if self.env["REQUEST_METHOD"] == "GET":
                 query_string = self.env["QUERY_STRING"]
-                if query_string:
+                query = dict()
+                for pair in query_string.split("&"):
+                    key, value = pair.split("=")
+                    query[key] = value
+            elif self.env["REQUEST_METHOD"] == "POST":
+                body = self.env['wsgi.input'].read()
+                if self.env["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
                     query = dict()
-                    for pair in query_string.split("&"):
+                    for pair in body.split("&"):
                         key, value = pair.split("=")
                         query[key] = value
-                    
             content = self.get_file_content(static_dir+abspath)
             content = self.fill_parameter(content)
             return "200 OK", [content], response_headers
