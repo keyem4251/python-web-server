@@ -50,7 +50,10 @@ class WSGIApplication:
         if b"$parameters" in content:
             query_list = [f"{k}: {v}<br>".encode() for k, v in self.query.items()]
             query_bytes = b"".join(query_list)
-            content = content.replace(b"$parameters", query_bytes)
+            if self.query:
+                content = content.replace(b"$parameters", query_bytes)
+            else:
+                content = content.replace(b"$parameters", b"parameters are not exist")
         return content
 
     @staticmethod
