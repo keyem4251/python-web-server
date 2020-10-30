@@ -39,7 +39,7 @@ class WSGIApplication:
         ]
         return response_headers
 
-    def fill_parameter(self, content: bytes):
+    def fill_parameter(self, content: bytes) -> bytes:
         if b"$now" in content:
             now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
             content = content.replace(b"$now", now_bytes)
