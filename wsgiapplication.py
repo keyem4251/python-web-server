@@ -66,7 +66,7 @@ class WSGIApplication:
         except Exception:
             server_error_html = "/500.html"
             content = self.get_file_content(static_dir + server_error_html)
-            print("WsgiApplication 500 Error: " + traceback.format_exc()
+            print("WsgiApplication 500 Error: " + traceback.format_exc())
             return "500 Internal Server Error", [content], response_headers
 
     def application(self, env: dict, start_response: Callable[[str, Iterable[tuple]], None]) -> Iterable[bytes]:
