@@ -6,6 +6,7 @@ from typing import Iterable, List, Callable
 
 class WSGIApplication:
     env: dict
+    query: dict
     content_type = {
         "html": "text/html",
         "htm": "text/html",
@@ -43,9 +44,13 @@ class WSGIApplication:
             now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
             content = content.replace(b"$now", now_bytes)
         if b"$headers" in content:
-            headers_list = [f"{k}: {v}<br>\n".encode() for k, v in self.env.items()]
+            headers_list = [f"{k}: {v}<br>".encode() for k, v in self.env.items()]
             headers_bytes = b"".join(headers_list)
             content = content.replace(b"$headers", headers_bytes)
+        if b"$parameters" in content:
+            query_list = [f"{k}: {v}<br>".encode() for k, v in self.query.items()]
+            query_bytes = b"".join(query_list)
+            content = content.replace(b"$parameters", query_bytes)
         return content
 
     @staticmethod
@@ -66,11 +71,11 @@ class WSGIApplication:
         try:
             if self.env["REQUEST_METHOD"] == "GET":
                 query_string = self.env["QUERY_STRING"]
-                query = self.parse_parameter(query_string)
+                self.query = self.parse_parameter(query_string)
             elif self.env["REQUEST_METHOD"] == "POST":
                 body = self.env['wsgi.input'].read()
                 if self.env["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
-                    query = self.parse_parameter(body.decode())
+                    self.query = self.parse_parameter(body.decode())
 
             content = self.get_file_content(static_dir+abspath)
             content = self.fill_parameter(content)
