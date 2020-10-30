@@ -48,6 +48,14 @@ class WSGIApplication:
             content = content.replace(b"$headers", headers_bytes)
         return content
 
+    @staticmethod
+    def parse_parameter(parameter: str) -> dict:
+        query = dict()
+        for pair in parameter.split("&"):
+            key, value = pair.split("=")
+            query[key] = value
+        return query
+
     def create_response(self):
         abspath = self.env.get("PATH_INFO")
         root = os.getcwd()
@@ -58,17 +66,12 @@ class WSGIApplication:
         try:
             if self.env["REQUEST_METHOD"] == "GET":
                 query_string = self.env["QUERY_STRING"]
-                query = dict()
-                for pair in query_string.split("&"):
-                    key, value = pair.split("=")
-                    query[key] = value
+                query = self.parse_parameter(query_string)
             elif self.env["REQUEST_METHOD"] == "POST":
                 body = self.env['wsgi.input'].read()
                 if self.env["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
-                    query = dict()
-                    for pair in body.split("&"):
-                        key, value = pair.split("=")
-                        query[key] = value
+                    query = self.parse_parameter(body)
+
             content = self.get_file_content(static_dir+abspath)
             content = self.fill_parameter(content)
             return "200 OK", [content], response_headers
