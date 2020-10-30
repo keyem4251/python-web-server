@@ -70,7 +70,7 @@ class WSGIApplication:
             elif self.env["REQUEST_METHOD"] == "POST":
                 body = self.env['wsgi.input'].read()
                 if self.env["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
-                    query = self.parse_parameter(body)
+                    query = self.parse_parameter(body.decode())
 
             content = self.get_file_content(static_dir+abspath)
             content = self.fill_parameter(content)

@@ -66,7 +66,7 @@ class ServerThread(Thread):
             "CONTENT_LENGTH": content_length,
             "SERVER_NAME": server_name,
             "SERVER_PORT": server_port,
-            "wsgi.input": io.StringIO(body),
+            "wsgi.input": io.BytesIO(body.encode()),
         }
         for k, v in http_variables_dict.items():
             key = "HTTP_" + k.upper().replace("-", "_")
