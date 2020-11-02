@@ -53,7 +53,7 @@ class Request:
         return server_name, server_port, content_type, content_length, headers_dict
 
     def parse(self, message: bytes):
-        data_str = message.decode()
-        request_line, headers, self.body = self.parse_request(data_str)
+        message_str = message.decode()
+        request_line, headers, self.body = self.parse_request(message_str)
         self.method, self.path, self.protocol, self.query_string = self.parse_request_line(request_line)
         self.server_name, self.server_port, self.content_type, self.content_length, self.http_variables = self.parse_headers(headers)
