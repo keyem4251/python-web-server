@@ -18,6 +18,10 @@ class WSGIApplication:
         "gif": "image/gif",
     }
 
+    def __init__(self):
+        self.env = dict()
+        self.query = dict()
+
     def get_content_type(self, ext: str):
         return self.content_type.get(ext, "application/octet-stream")
 
