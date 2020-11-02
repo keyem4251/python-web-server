@@ -6,6 +6,7 @@ from threading import Thread
 from typing import List, Iterable
 
 from wsgiapplication import WSGIApplication
+from wsgihttp.message import Request
 
 
 class ServerThread(Thread):
@@ -27,48 +28,23 @@ class ServerThread(Thread):
             headers.append(f"{response_header[0]}: {response_header[1]}")
         return "\r\n".join(headers).encode()
 
-    def parse_request(self, request_str: str):
-        request_line, remain = request_str.split(self.separator, maxsplit=1)
-        headers, body = remain.rsplit(self.separator, maxsplit=1)
-        return request_line, headers, body
-
     @staticmethod
-    def parse_request_line(request_line: str):
-        method, path, protocol = request_line.split(" ", maxsplit=2)
-        abspath = os.path.abspath(path)
-        query_string = ""
-        if "?" in abspath:
-            abspath, query_string = abspath.split("?", maxsplit=1)
-        return method, abspath, protocol, query_string
-
-    def parse_headers(self, headers: str):
-        headers_dict = dict()
-        for header in headers.split(self.separator):
-            if ": " in header:
-                key, value = header.split(": ")
-                headers_dict[key] = value
-        server_name, server_port = headers_dict.pop("Host", "").split(":")
-        content_type = headers_dict.pop("Content-Type", "")
-        content_length = headers_dict.pop("Content-Length", "")
-        return server_name, server_port, content_type, content_length, headers_dict
-
-    def build_env(self, request_str: str):
-        request_line, headers, body = self.parse_request(request_str)
-        method, abspath, protocol, query_string = self.parse_request_line(request_line)
-        server_name, server_port, content_type, content_length, http_variables_dict = self.parse_headers(headers)
+    def build_env(message: bytes):
+        request = Request()
+        request.parse(message)
 
         env = {
-            "REQUEST_METHOD": method,
-            "SERVER_PROTOCOL": protocol,
-            "PATH_INFO": abspath,
-            "QUERY_STRING": query_string,
-            "CONTENT_TYPE": content_type,
-            "CONTENT_LENGTH": content_length,
-            "SERVER_NAME": server_name,
-            "SERVER_PORT": server_port,
-            "wsgi.input": io.BytesIO(body.encode()),
+            "REQUEST_METHOD": request.method,
+            "SERVER_PROTOCOL": request.protocol,
+            "PATH_INFO": request.path,
+            "QUERY_STRING": request.query_string,
+            "CONTENT_TYPE": request.content_type,
+            "CONTENT_LENGTH": request.content_length,
+            "SERVER_NAME": request.server_name,
+            "SERVER_PORT": request.server_port,
+            "wsgi.input": io.BytesIO(request.body),
         }
-        for k, v in http_variables_dict.items():
+        for k, v in request.http_variables.items():
             key = "HTTP_" + k.upper().replace("-", "_")
             env[key] = v
         return env
@@ -83,13 +59,13 @@ class ServerThread(Thread):
 
     def run(self) -> None:
         try:
-            request = self.socket.recv(4096)
+            message = self.socket.recv(4096)
             print("-------------- receive request --------------")
-            print(request.decode())
+            print(message.decode())
             print("---------------------------------------------")
 
             # requestを元にenvを作成
-            env = self.build_env(request.decode())
+            env = self.build_env(message)
 
             # start_responseを定義
             def start_response(response_line: str, response_headers: List[tuple]):
