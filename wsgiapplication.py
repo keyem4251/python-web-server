@@ -63,6 +63,9 @@ class WSGIApplication:
     @staticmethod
     def parse_parameter(parameter: str) -> dict:
         query = dict()
+        if not parameter:
+            return query
+
         for pair in parameter.split("&"):
             key, value = pair.split("=")
             query[key] = value
@@ -72,9 +75,19 @@ class WSGIApplication:
         abspath = self.env.get("PATH_INFO")
         root = os.getcwd()
         static_dir = f"{root}/static"
-        ext = abspath.split(".")[1]
-        response_headers = self.create_response_headers(ext)
 
+        if abspath.endswith("/"):
+            path = f"{abspath}index.html"
+            ext = "html"
+        elif "." in abspath:
+            path = abspath
+            ext = abspath.split(".")[1]
+        else:
+            path = f"{abspath}/index.html"
+            ext = "html"
+        response_headers = self.create_response_headers(ext)
+        print(f"path: {path}")
+        print(f"ext: {ext}")
         try:
             if self.env["REQUEST_METHOD"] == "GET":
                 query_string = self.env["QUERY_STRING"]
@@ -84,7 +97,7 @@ class WSGIApplication:
                 if self.env["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
                     self.query = self.parse_parameter(body.decode())
 
-            content = self.get_file_content(static_dir+abspath)
+            content = self.get_file_content(static_dir+path)
             content = self.fill_parameter(content)
             return "200 OK", [content], response_headers
         except FileNotFoundError:
