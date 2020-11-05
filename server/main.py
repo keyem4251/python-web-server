@@ -1,5 +1,5 @@
 import socket
-from serverthread import ServerThread
+from server.serverthread import ServerThread
 
 
 class Main:

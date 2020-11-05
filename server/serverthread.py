@@ -5,8 +5,8 @@ import io
 from threading import Thread
 from typing import List, Iterable
 
-from wsgiapplication import WSGIApplication
-from wsgihttp.message import Request
+from application.wsgiapplication import WSGIApplication
+from server.message import Request
 
 
 class ServerThread(Thread):

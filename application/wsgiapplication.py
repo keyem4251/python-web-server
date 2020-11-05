@@ -86,7 +86,7 @@ class WSGIApplication:
             path = abspath
             ext = abspath.split(".")[1]
         response_headers = self.create_response_headers(ext)
-        
+
         try:
             if self.env["REQUEST_METHOD"] == "GET":
                 query_string = self.env["QUERY_STRING"]
