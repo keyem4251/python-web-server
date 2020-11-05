@@ -36,7 +36,7 @@ class WSGIApplication:
         response_headers = [
             ('Content-type', self.get_content_type(ext)),
             ("Date", self.get_date_string_utc()),
-            ("Server", "Modoki/0.3"),
+            ("Server", "Henadjango"),
             ("Connection", "close")
         ]
         return response_headers
