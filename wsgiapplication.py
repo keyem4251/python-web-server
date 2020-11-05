@@ -76,15 +76,17 @@ class WSGIApplication:
         root = os.getcwd()
         static_dir = f"{root}/static"
 
-        if abspath.endswith("/") or "." not in abspath:
+        if abspath.endswith("/"):
             path = f"{abspath}index.html"
+            ext = "html"
+        elif not abspath.endswith("/") and "." not in abspath:
+            path = f"{abspath}/index.html"
             ext = "html"
         else:
             path = abspath
             ext = abspath.split(".")[1]
         response_headers = self.create_response_headers(ext)
-        print(f"path: {path}")
-        print(f"ext: {ext}")
+        
         try:
             if self.env["REQUEST_METHOD"] == "GET":
                 query_string = self.env["QUERY_STRING"]
