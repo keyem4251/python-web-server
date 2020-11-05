@@ -5,6 +5,7 @@ from typing import Iterable, List, Callable
 
 from application.http.request import Request
 from application.http.response import Response
+from application.views.parameters import ParametersView
 
 
 class WSGIApplication:
@@ -81,14 +82,7 @@ class WSGIApplication:
                 return Response("200 OK", content, response_headers)
 
             elif path == "/parameters/":
-                query_list = [f"{k}: {v}<br>".encode() for k, v in self.query.items()]
-                query_bytes = b"".join(query_list)
-                content = self.get_file_content(static_dir + "/parameters/index.html")
-                if request.query_dict:
-                    content = content.replace(b"$parameters", query_bytes)
-                else:
-                    content = content.replace(b"$parameters", b"parameters are not exist")
-                return Response("200 OK", content, response_headers)
+                return ParametersView().get_response(request)
 
             content = self.get_file_content(static_dir + path)
             return Response("200 OK", content, response_headers)

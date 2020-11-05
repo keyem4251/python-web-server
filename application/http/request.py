@@ -4,6 +4,8 @@ class Request:
     method: str
     path: str
     headers: dict
+    GET: dict
+    POST: dict
 
     def __init__(self, env: dict):
         self.env = env
@@ -15,9 +17,19 @@ class Request:
         for k, v in self.env:
             if k.startswith("HTTP_"):
                 self.headers[k] = v
+        self.GET = dict()
+        self.POST = dict()
+        if self.method == "GET" and self.env["QUERY_STRING"]:
+            for pair in self.env["QUERY_STRING"].split("&"):
+                key, value = pair.split("=")
+                self.GET[key] = value
+        elif self.method == "POST" and self.headers["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
+            for pair in self.body.decode().split("&"):
+                key, value = pair.split("=")
+                self.POST[key] = value
 
     @property
-    def body(self):
+    def body(self) -> bytes:
         return self.env["wsgi.input"].read()
 
     @property
