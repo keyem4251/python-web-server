@@ -74,7 +74,7 @@ class WSGIApplication:
     def create_response(self):
         abspath = self.env.get("PATH_INFO")
         root = os.getcwd()
-        static_dir = f"{root}/static"
+        static_dir = f"{root}/application/static"
 
         if abspath.endswith("/"):
             path = f"{abspath}index.html"
