@@ -1,5 +1,6 @@
-import datetime
 from enum import Enum
+
+from application.utils import get_date_string_utc
 
 
 # noinspection PyPep8Naming
@@ -23,14 +24,10 @@ class Response:
         else:
             self.headers = {
                 "Content-type": "application/octet-stream",
-                "Date": self.get_date_string_utc(),
+                "Date": get_date_string_utc(),
                 "Server": "HenaDjango",
                 "Connection": "close",
             }
 
         if content_type:
             self.headers["Content-type"] = content_type
-
-    @staticmethod
-    def get_date_string_utc():
-        return datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
