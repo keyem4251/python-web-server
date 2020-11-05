@@ -9,6 +9,9 @@ from application.views.parameters import ParametersView
 
 
 class WSGIApplication:
+    env: dict
+    start_response: Callable[[str, List[tuple]], None]
+
     content_type = {
         "html": "text/html",
         "htm": "text/html",
@@ -97,8 +100,16 @@ class WSGIApplication:
             print("WsgiApplication 500 Error: " + traceback.format_exc())
             return Response("500 Internal Server Error", content, response_headers)
 
+    def start_response_from_response(self, response: Response) -> None:
+        headers = [(k, v) for k, v in response.headers.items()]
+        self.start_response(response.status, headers)
+
     def application(self, env: dict, start_response: Callable[[str, Iterable[tuple]], None]) -> Iterable[bytes]:
+        self.env = env
+        self.start_response = start_response
+
         request = Request(env)
         response: Response = self.create_response(request)
-        start_response(response.status, response.headers)
+        self.start_response_from_response(response)
+
         return [response.body]
