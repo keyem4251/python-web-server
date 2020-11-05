@@ -84,7 +84,7 @@ class WSGIApplication:
                 body = self.env['wsgi.input'].read()
                 if self.env["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
                     self.query = self.parse_parameter(body.decode())
-            print(f"path: {path}")
+
             if path == "/":
                 content = self.get_file_content(static_dir + "/index.html")
                 return "200 OK", [content], response_headers
