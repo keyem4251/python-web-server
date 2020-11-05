@@ -76,15 +76,12 @@ class WSGIApplication:
         root = os.getcwd()
         static_dir = f"{root}/static"
 
-        if abspath.endswith("/"):
+        if abspath.endswith("/") or "." not in abspath:
             path = f"{abspath}index.html"
             ext = "html"
-        elif "." in abspath:
+        else:
             path = abspath
             ext = abspath.split(".")[1]
-        else:
-            path = f"{abspath}/index.html"
-            ext = "html"
         response_headers = self.create_response_headers(ext)
         print(f"path: {path}")
         print(f"ext: {ext}")
