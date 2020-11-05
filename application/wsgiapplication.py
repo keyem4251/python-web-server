@@ -43,23 +43,6 @@ class WSGIApplication:
         ]
         return response_headers
 
-    def fill_parameter(self, content: bytes) -> bytes:
-        if b"$now" in content:
-            now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
-            content = content.replace(b"$now", now_bytes)
-        if b"$headers" in content:
-            headers_list = [f"{k}: {v}<br>".encode() for k, v in self.env.items()]
-            headers_bytes = b"".join(headers_list)
-            content = content.replace(b"$headers", headers_bytes)
-        if b"$parameters" in content:
-            query_list = [f"{k}: {v}<br>".encode() for k, v in self.query.items()]
-            query_bytes = b"".join(query_list)
-            if self.query:
-                content = content.replace(b"$parameters", query_bytes)
-            else:
-                content = content.replace(b"$parameters", b"parameters are not exist")
-        return content
-
     @staticmethod
     def parse_parameter(parameter: str) -> dict:
         query = dict()
@@ -71,20 +54,26 @@ class WSGIApplication:
             query[key] = value
         return query
 
+    @staticmethod
+    def get_ext(abspath: str) -> str:
+        if abspath.endswith("/"):
+            ext = "html"
+        elif not abspath.endswith("/") and "." not in abspath:
+            ext = "html"
+        else:
+            ext = abspath.split(".")[1]
+        return ext
+
     def create_response(self):
         abspath = self.env.get("PATH_INFO")
         root = os.getcwd()
         static_dir = f"{root}/application/static"
 
-        if abspath.endswith("/"):
-            path = f"{abspath}index.html"
-            ext = "html"
-        elif not abspath.endswith("/") and "." not in abspath:
-            path = f"{abspath}/index.html"
-            ext = "html"
+        if not abspath.endswith("/") and "." not in abspath:
+            path = f"{abspath}/"
         else:
             path = abspath
-            ext = abspath.split(".")[1]
+        ext = self.get_ext(abspath)
         response_headers = self.create_response_headers(ext)
 
         try:
@@ -95,10 +84,37 @@ class WSGIApplication:
                 body = self.env['wsgi.input'].read()
                 if self.env["CONTENT_TYPE"] == "application/x-www-form-urlencoded":
                     self.query = self.parse_parameter(body.decode())
+            print(f"path: {path}")
+            if path == "/":
+                content = self.get_file_content(static_dir + "/index.html")
+                return "200 OK", [content], response_headers
 
-            content = self.get_file_content(static_dir+path)
-            content = self.fill_parameter(content)
+            elif path == "/now/":
+                now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
+                content = self.get_file_content(static_dir + "/now/index.html")
+                content = content.replace(b"$now", now_bytes)
+                return "200 OK", [content], response_headers
+
+            elif path == "/headers/":
+                headers_list = [f"{k}: {v}<br>".encode() for k, v in self.env.items()]
+                headers_bytes = b"".join(headers_list)
+                content = self.get_file_content(static_dir + "/headers/index.html")
+                content = content.replace(b"$headers", headers_bytes)
+                return "200 OK", [content], response_headers
+
+            elif path == "/parameters/":
+                query_list = [f"{k}: {v}<br>".encode() for k, v in self.query.items()]
+                query_bytes = b"".join(query_list)
+                content = self.get_file_content(static_dir + "/parameters/index.html")
+                if self.query:
+                    content = content.replace(b"$parameters", query_bytes)
+                else:
+                    content = content.replace(b"$parameters", b"parameters are not exist")
+                return "200 OK", [content], response_headers
+
+            content = self.get_file_content(static_dir + path)
             return "200 OK", [content], response_headers
+
         except FileNotFoundError:
             not_fount_html = "/404.html"
             content = self.get_file_content(static_dir+not_fount_html)
