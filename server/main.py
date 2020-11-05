@@ -22,7 +22,3 @@ class Main:
             thread = ServerThread(client_socket)
             print("スレッド起動。")
             thread.start()
-
-
-if __name__ == "__main__":
-    Main().main()
