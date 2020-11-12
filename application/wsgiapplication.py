@@ -7,6 +7,7 @@ from application.http.request import Request
 from application.http.response import Response, ResponseNotFound, ResponseServerError
 from application.views.parameters import ParametersView
 from application.views.headers import HeadersView
+from application.views.now import NowView
 
 
 class WSGIApplication:
@@ -73,10 +74,7 @@ class WSGIApplication:
                 return Response(content, headers=response_headers)
 
             elif path == "/now/":
-                now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
-                content = self.get_file_content(static_dir + "/now/index.html")
-                content = content.replace(b"$now", now_bytes)
-                return Response(content, headers=response_headers)
+                return NowView().get_response(request)
 
             elif path == "/headers/":
                 return HeadersView().get_response(request)
