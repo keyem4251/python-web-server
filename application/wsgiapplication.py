@@ -4,7 +4,7 @@ import traceback
 from typing import Iterable, List, Callable
 
 from application.http.request import Request
-from application.http.response import Response
+from application.http.response import Response, ResponseNotFound, ResponseServerError
 from application.views.parameters import ParametersView
 from application.views.headers import HeadersView
 
@@ -70,13 +70,13 @@ class WSGIApplication:
         try:
             if path == "/":
                 content = self.get_file_content(static_dir + "/index.html")
-                return Response("200 OK", content, headers=response_headers)
+                return Response(content, status="200 OK", headers=response_headers)
 
             elif path == "/now/":
                 now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
                 content = self.get_file_content(static_dir + "/now/index.html")
                 content = content.replace(b"$now", now_bytes)
-                return Response("200 OK", content, headers=response_headers)
+                return Response(content, status="200 OK", headers=response_headers)
 
             elif path == "/headers/":
                 return HeadersView().get_response(request)
@@ -85,17 +85,17 @@ class WSGIApplication:
                 return ParametersView().get_response(request)
 
             content = self.get_file_content(static_dir + path)
-            return Response("200 OK", content, headers=response_headers)
+            return Response(content, status="200 OK", headers=response_headers)
 
         except FileNotFoundError:
             not_fount_html = "/404.html"
             content = self.get_file_content(static_dir+not_fount_html)
-            return Response("404 File not Found", content, headers=response_headers)
+            return ResponseNotFound(content, headers=response_headers)
         except Exception:
             server_error_html = "/500.html"
             content = self.get_file_content(static_dir + server_error_html)
             print("WsgiApplication 500 Error: " + traceback.format_exc())
-            return Response("500 Internal Server Error", content, headers=response_headers)
+            return ResponseServerError(content, headers=response_headers)
 
     def start_response_from_response(self, response: Response) -> None:
         headers = [(k, v) for k, v in response.headers.items()]

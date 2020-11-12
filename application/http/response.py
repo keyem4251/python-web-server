@@ -11,13 +11,15 @@ class HTTP_STATUS(Enum):
 
 
 class Response:
-    status: HTTP_STATUS
+    status: HTTP_STATUS = HTTP_STATUS.OK
     headers: dict
     body: bytes
 
-    def __init__(self, status: str, body: bytes, headers=None, content_type=None):
-        self.status = status
+    def __init__(self, body: bytes, status=None, headers=None, content_type=None):
         self.body = body
+
+        if status:
+            self.status = status
 
         if headers:
             self.headers = headers
@@ -31,3 +33,11 @@ class Response:
 
         if content_type:
             self.headers["Content-type"] = content_type
+
+
+class ResponseNotFound(Response):
+    status = HTTP_STATUS.NOT_FOUND
+
+
+class ResponseServerError(Response):
+    status = HTTP_STATUS.SERVER_ERROR

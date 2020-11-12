@@ -16,4 +16,4 @@ class HeadersView(View):
         content = self.get_file_content(self.static_dir + "/headers/index.html")
         content = content.replace(b"$headers", headers_bytes)
 
-        return Response(status=HTTP_STATUS.OK, body=content, content_type=content_type)
+        return Response(body=content, status=HTTP_STATUS.OK, content_type=content_type)

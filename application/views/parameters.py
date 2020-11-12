@@ -21,7 +21,7 @@ class ParametersView(View):
             content = content.replace(b"$parameters", query_bytes)
         else:
             content = content.replace(b"$parameters", b"parameters are not exist")
-        return Response(status=HTTP_STATUS.OK, body=content, content_type=content_type)
+        return Response(body=content, status=HTTP_STATUS.OK, content_type=content_type)
 
     def post(self, request: Request) -> Response:
         content_type = self.get_content_type(request)
@@ -32,4 +32,4 @@ class ParametersView(View):
             content = content.replace(b"$parameters", query_bytes)
         else:
             content = content.replace(b"$parameters", b"parameters are not exist")
-        return Response(status=HTTP_STATUS.OK, body=content, content_type=content_type)
+        return Response(body=content, status=HTTP_STATUS.OK, content_type=content_type)
