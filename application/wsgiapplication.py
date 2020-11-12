@@ -8,6 +8,7 @@ from application.http.response import Response, ResponseNotFound, ResponseServer
 from application.views.parameters import ParametersView
 from application.views.headers import HeadersView
 from application.views.now import NowView
+from application.views.error import NotFoundView, ServerErrorView
 
 
 class WSGIApplication:
@@ -37,7 +38,7 @@ class WSGIApplication:
         with open(path, "rb") as f:
             return f.read()
 
-    def create_response_headers(self, ext: str) -> List:
+    def create_response_headers(self, ext: str) -> dict:
         response_headers = {
             "Content-type": self.get_content_type(ext),
             "Date": self.get_date_string_utc(),
@@ -86,14 +87,10 @@ class WSGIApplication:
             return Response(content, headers=response_headers)
 
         except FileNotFoundError:
-            not_fount_html = "/404.html"
-            content = self.get_file_content(static_dir+not_fount_html)
-            return ResponseNotFound(content, headers=response_headers)
+            return NotFoundView().get_response(request)
         except Exception:
-            server_error_html = "/500.html"
-            content = self.get_file_content(static_dir + server_error_html)
             print("WsgiApplication 500 Error: " + traceback.format_exc())
-            return ResponseServerError(content, headers=response_headers)
+            return ServerErrorView().get_response(request)
 
     def start_response_from_response(self, response: Response) -> None:
         headers = [(k, v) for k, v in response.headers.items()]
