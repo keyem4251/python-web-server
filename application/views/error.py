@@ -12,7 +12,7 @@ class NotFoundView(View):
 
     def get_response(self, request: Request) -> Response:
         content = self.get_file_content(self.static_dir + self.not_fount_html)
-        return ResponseNotFound(content, content_type='text/html')
+        return ResponseNotFound(content, content_type="text/html")
 
 
 class ServerErrorView(View):
@@ -24,4 +24,4 @@ class ServerErrorView(View):
 
     def get_response(self, request: Request) -> Response:
         content = self.get_file_content(self.static_dir + self.not_fount_html)
-        return ResponseServerError(content, content_type='text/html')
+        return ResponseServerError(content, content_type="text/html")

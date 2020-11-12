@@ -72,7 +72,7 @@ class WSGIApplication:
         try:
             if path == "/":
                 content = self.get_file_content(static_dir + "/index.html")
-                return Response(content, headers=response_headers)
+                return Response(content, content_type="text/html")
 
             elif path == "/now/":
                 return NowView().get_response(request)
