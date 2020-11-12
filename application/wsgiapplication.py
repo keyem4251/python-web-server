@@ -70,13 +70,13 @@ class WSGIApplication:
         try:
             if path == "/":
                 content = self.get_file_content(static_dir + "/index.html")
-                return Response(content, status="200 OK", headers=response_headers)
+                return Response(content, headers=response_headers)
 
             elif path == "/now/":
                 now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
                 content = self.get_file_content(static_dir + "/now/index.html")
                 content = content.replace(b"$now", now_bytes)
-                return Response(content, status="200 OK", headers=response_headers)
+                return Response(content, headers=response_headers)
 
             elif path == "/headers/":
                 return HeadersView().get_response(request)
@@ -85,7 +85,7 @@ class WSGIApplication:
                 return ParametersView().get_response(request)
 
             content = self.get_file_content(static_dir + path)
-            return Response(content, status="200 OK", headers=response_headers)
+            return Response(content, headers=response_headers)
 
         except FileNotFoundError:
             not_fount_html = "/404.html"
