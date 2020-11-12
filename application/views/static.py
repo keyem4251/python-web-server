@@ -16,7 +16,7 @@ class StaticView(View):
             path = f"{abspath}/"
         else:
             path = abspath
-        print(f"find path: {self.static_dir + path}")
+
         content_type = self.get_content_type(request)
         content = self.get_file_content(self.static_dir + path)
         return Response(content, content_type=content_type)
