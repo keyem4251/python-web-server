@@ -3,18 +3,23 @@ from application.http.request import Request
 
 
 class View:
-    content_type = {
-        "html": "text/html",
-        "htm": "text/html",
-        "txt": "text/plain",
-        "css": "text/css",
-        "png": "image/png",
-        "jpg": "image/jpeg",
-        "jpeg": "image/jpeg",
-        "gif": "image/gif",
-    }
-    root = os.getcwd()
-    static_dir = f"{root}/application/static"
+    content_type: dict
+    root: str
+    template_dir: str
+
+    def __init__(self):
+        self.content_type = {
+            "html": "text/html",
+            "htm": "text/html",
+            "txt": "text/plain",
+            "css": "text/css",
+            "png": "image/png",
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "gif": "image/gif",
+        }
+        self.root = os.getcwd()
+        self.template_dir = f"{self.root}/application/templates"
 
     def get_content_type(self, request: Request):
         ext = self.get_ext(request.path)

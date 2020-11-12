@@ -16,7 +16,7 @@ class ParametersView(View):
         content_type = self.get_content_type(request)
         query_list = [f"{k}: {v}<br>".encode() for k, v in request.GET.items()]
         query_bytes = b"".join(query_list)
-        content = self.get_file_content(self.static_dir + "/parameters/index.html")
+        content = self.get_file_content(self.template_dir + "/parameters/index.html")
         if query_bytes:
             content = content.replace(b"$parameters", query_bytes)
         else:
@@ -27,7 +27,7 @@ class ParametersView(View):
         content_type = self.get_content_type(request)
         query_list = [f"{k}: {v}<br>".encode() for k, v in request.POST.items()]
         query_bytes = b"".join(query_list)
-        content = self.get_file_content(self.static_dir + "/parameters/index.html")
+        content = self.get_file_content(self.template_dir + "/parameters/index.html")
         if query_bytes:
             content = content.replace(b"$parameters", query_bytes)
         else:
