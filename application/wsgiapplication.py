@@ -6,6 +6,7 @@ from typing import Iterable, List, Callable
 from application.http.request import Request
 from application.http.response import Response
 from application.views.parameters import ParametersView
+from application.views.headers import HeadersView
 
 
 class WSGIApplication:
@@ -78,11 +79,7 @@ class WSGIApplication:
                 return Response("200 OK", content, headers=response_headers)
 
             elif path == "/headers/":
-                headers_list = [f"{k}: {v}<br>".encode() for k, v in self.env.items()]
-                headers_bytes = b"".join(headers_list)
-                content = self.get_file_content(static_dir + "/headers/index.html")
-                content = content.replace(b"$headers", headers_bytes)
-                return Response("200 OK", content, headers=response_headers)
+                return HeadersView().get_response(request)
 
             elif path == "/parameters/":
                 return ParametersView().get_response(request)
