@@ -4,11 +4,10 @@ from application.views.base import View
 
 
 class StaticView(View):
-    static_dir: str
 
     def __init__(self):
         super().__init__()
-        self.static_dir = f"{self.root}/application/"
+        self.template_dir = f"{self.root}/application/"
 
     def get_response(self, request: Request) -> Response:
         abspath = request.path
