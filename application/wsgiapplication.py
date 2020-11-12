@@ -36,12 +36,12 @@ class WSGIApplication:
             return f.read()
 
     def create_response_headers(self, ext: str) -> List:
-        response_headers = [
-            ('Content-type', self.get_content_type(ext)),
-            ("Date", self.get_date_string_utc()),
-            ("Server", "Henadjango"),
-            ("Connection", "close")
-        ]
+        response_headers = {
+            "Content-type": self.get_content_type(ext),
+            "Date": self.get_date_string_utc(),
+            "Server": "HenaDjango",
+            "Connection": "close",
+        }
         return response_headers
 
     @staticmethod
@@ -69,36 +69,36 @@ class WSGIApplication:
         try:
             if path == "/":
                 content = self.get_file_content(static_dir + "/index.html")
-                return Response("200 OK", content, response_headers)
+                return Response("200 OK", content, headers=response_headers)
 
             elif path == "/now/":
                 now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
                 content = self.get_file_content(static_dir + "/now/index.html")
                 content = content.replace(b"$now", now_bytes)
-                return Response("200 OK", content, response_headers)
+                return Response("200 OK", content, headers=response_headers)
 
             elif path == "/headers/":
                 headers_list = [f"{k}: {v}<br>".encode() for k, v in self.env.items()]
                 headers_bytes = b"".join(headers_list)
                 content = self.get_file_content(static_dir + "/headers/index.html")
                 content = content.replace(b"$headers", headers_bytes)
-                return Response("200 OK", content, response_headers)
+                return Response("200 OK", content, headers=response_headers)
 
             elif path == "/parameters/":
                 return ParametersView().get_response(request)
 
             content = self.get_file_content(static_dir + path)
-            return Response("200 OK", content, response_headers)
+            return Response("200 OK", content, headers=response_headers)
 
         except FileNotFoundError:
             not_fount_html = "/404.html"
             content = self.get_file_content(static_dir+not_fount_html)
-            return Response("404 File not Found", content, response_headers)
+            return Response("404 File not Found", content, headers=response_headers)
         except Exception:
             server_error_html = "/500.html"
             content = self.get_file_content(static_dir + server_error_html)
             print("WsgiApplication 500 Error: " + traceback.format_exc())
-            return Response("500 Internal Server Error", content, response_headers)
+            return Response("500 Internal Server Error", content, headers=response_headers)
 
     def start_response_from_response(self, response: Response) -> None:
         headers = [(k, v) for k, v in response.headers.items()]
