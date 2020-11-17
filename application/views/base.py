@@ -1,7 +1,7 @@
 import os
 
 from application.http.request import Request
-from application.http.response import Response
+from application.http.response import Response, HTTP_STATUS
 
 
 class BaseView:
@@ -31,6 +31,12 @@ class BaseView:
             return self.post(request)
         else:
             raise NotImplementedError
+
+    def get(self, request: Request) -> Response:
+        return Response(status=HTTP_STATUS.METHOD_NOT_ALLOWED)
+
+    def post(self, request: Request) -> Response:
+        return Response(status=HTTP_STATUS.METHOD_NOT_ALLOWED)
 
     def get_content_type(self, request: Request):
         ext = self.get_ext(request.path)

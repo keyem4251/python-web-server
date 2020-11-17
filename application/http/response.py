@@ -6,17 +6,19 @@ from application.utils import get_date_string_utc
 # noinspection PyPep8Naming
 class HTTP_STATUS(Enum):
     OK = "200 OK"
-    NOT_FOUND = "404 Not Found."
+    NOT_FOUND = "404 Not Found"
+    METHOD_NOT_ALLOWED = "405 Method Not Allowed"
     SERVER_ERROR = "500 Internal Server Error"
 
 
 class Response:
     status: HTTP_STATUS = HTTP_STATUS.OK
     headers: dict
-    body: bytes
+    body: bytes = b""
 
-    def __init__(self, body: bytes, status=None, headers=None, content_type=None):
-        self.body = body
+    def __init__(self, body=None, status=None, headers=None, content_type=None):
+        if body:
+            self.body = body
 
         if status:
             self.status = status
