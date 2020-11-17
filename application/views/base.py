@@ -30,7 +30,7 @@ class BaseView:
         elif request.method == "POST":
             return self.post(request)
         else:
-            raise NotImplementedError
+            return Response(status=HTTP_STATUS.METHOD_NOT_ALLOWED)
 
     def get(self, request: Request) -> Response:
         return Response(status=HTTP_STATUS.METHOD_NOT_ALLOWED)
