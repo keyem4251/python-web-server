@@ -37,11 +37,6 @@ class BaseView:
         return self.content_type.get(ext, "application/octet-stream")
 
     @staticmethod
-    def get_file_content(path: str):
-        with open(path, "rb") as f:
-            return f.read()
-
-    @staticmethod
     def get_ext(abspath: str) -> str:
         if abspath.endswith("/"):
             ext = "html"

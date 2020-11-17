@@ -1,6 +1,7 @@
 from application.http.request import Request
 from application.http.response import Response, HTTP_STATUS
 from application.views.base import BaseView
+from application.utils import get_file_content
 
 
 class StaticView(BaseView):
@@ -17,6 +18,6 @@ class StaticView(BaseView):
             path = abspath
 
         content_type = self.get_content_type(request)
-        content = self.get_file_content(self.template_dir + path)
+        content = get_file_content(self.template_dir + path)
         return Response(content, content_type=content_type)
 
