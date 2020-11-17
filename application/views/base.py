@@ -1,8 +1,10 @@
 import os
+
 from application.http.request import Request
+from application.http.response import Response
 
 
-class View:
+class BaseView:
     content_type: dict
     root: str
     template_dir: str
@@ -20,6 +22,15 @@ class View:
         }
         self.root = os.getcwd()
         self.template_dir = f"{self.root}/application/templates"
+
+    def get_response(self, request: Request) -> Response:
+        if request.method == "GET":
+            return self.get(request)
+
+        elif request.method == "POST":
+            return self.post(request)
+        else:
+            raise NotImplementedError
 
     def get_content_type(self, request: Request):
         ext = self.get_ext(request.path)

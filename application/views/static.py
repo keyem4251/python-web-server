@@ -1,15 +1,15 @@
 from application.http.request import Request
 from application.http.response import Response, HTTP_STATUS
-from application.views.base import View
+from application.views.base import BaseView
 
 
-class StaticView(View):
+class StaticView(BaseView):
 
     def __init__(self):
         super().__init__()
         self.template_dir = f"{self.root}/application/"
 
-    def get_response(self, request: Request) -> Response:
+    def get(self, request: Request) -> Response:
         abspath = request.path
         if not abspath.endswith("/") and "." not in abspath:
             path = f"{abspath}/"
@@ -17,5 +17,6 @@ class StaticView(View):
             path = abspath
 
         content_type = self.get_content_type(request)
-        content = self.get_file_content(self.static_dir + path)
+        content = self.get_file_content(self.template_dir + path)
         return Response(content, content_type=content_type)
+

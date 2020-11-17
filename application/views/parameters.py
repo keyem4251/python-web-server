@@ -1,16 +1,9 @@
 from application.http.request import Request
 from application.http.response import Response, HTTP_STATUS
-from application.views.base import View
+from application.views.base import BaseView
 
 
-class ParametersView(View):
-
-    def get_response(self, request: Request) -> Response:
-        if request.method == "GET":
-            return self.get(request)
-
-        elif request.method == "POST":
-            return self.post(request)
+class ParametersView(BaseView):
 
     def get(self, request: Request) -> Response:
         content_type = self.get_content_type(request)

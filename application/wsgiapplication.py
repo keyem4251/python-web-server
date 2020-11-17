@@ -10,7 +10,7 @@ from application.views.headers import HeadersView
 from application.views.now import NowView
 from application.views.index import IndexView
 from application.views.static import StaticView
-from application.views.error import NotFoundView, ServerErrorView
+from application.views.errors import page_not_found, server_error
 
 
 class WSGIApplication:
@@ -41,14 +41,14 @@ class WSGIApplication:
                 return StaticView().get_response(request)
 
             else:
-                raise NotImplementedError
+                raise FileNotFoundError
 
         except FileNotFoundError:
-            return NotFoundView().get_response(request)
+            return page_not_found()
 
         except Exception:
             print("WsgiApplication 500 Error: " + traceback.format_exc())
-            return ServerErrorView().get_response(request)
+            return server_error()
 
     def set_response_to_start_response(self, response: Response) -> None:
         headers = [(k, v) for k, v in response.headers.items()]
