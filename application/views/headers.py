@@ -8,10 +8,9 @@ from application.utils import get_file_content
 class HeadersView(BaseView):
 
     def get(self, request: Request) -> Response:
-        content_type = self.get_content_type(request)
         headers_list = [f"{k}: {v}<br>".encode() for k, v in request.headers.items()]
         headers_bytes = b"".join(headers_list)
         content = get_file_content(TEMPLATE_DIR + "/headers/index.html")
         content = content.replace(b"$headers", headers_bytes)
 
-        return Response(body=content, content_type=content_type)
+        return Response(body=content, content_type="text/html")

@@ -8,6 +8,5 @@ from application.utils import get_file_content
 class IndexView(BaseView):
 
     def get(self, request: Request) -> Response:
-        content_type = self.get_content_type(request)
         content = get_file_content(TEMPLATE_DIR + "/index.html")
-        return Response(body=content, content_type=content_type)
+        return Response(body=content, content_type="text/html")

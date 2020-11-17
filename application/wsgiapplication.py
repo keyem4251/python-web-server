@@ -9,13 +9,22 @@ from application.views.now import NowView
 from application.views.index import IndexView
 from application.views.static import StaticView
 from application.views.errors import page_not_found, server_error
+from application.views.base import BaseView
+
+URL_VIEW = {
+    "/": IndexView(),
+    "/now/": NowView(),
+    "/headers/": HeadersView(),
+    "/parameters/": ParametersView(),
+}
 
 
 class WSGIApplication:
     env: dict
     start_response: Callable[[str, List[tuple]], None]
 
-    def create_response(self, request: Request) -> Response:
+    @staticmethod
+    def create_response(request: Request) -> Response:
         try:
             abspath = request.path
             if not abspath.endswith("/") and "." not in abspath:
@@ -23,20 +32,12 @@ class WSGIApplication:
             else:
                 path = abspath
 
-            if path == "/":
-                return IndexView().get_response(request)
-
-            elif path == "/now/":
-                return NowView().get_response(request)
-
-            elif path == "/headers/":
-                return HeadersView().get_response(request)
-
-            elif path == "/parameters/":
-                return ParametersView().get_response(request)
-
-            elif path.startswith("/static/"):
+            if path.startswith("/static/"):
                 return StaticView().get_response(request)
+
+            elif path in URL_VIEW:
+                view: BaseView = URL_VIEW[path]
+                return view.get_response(request)
 
             else:
                 raise FileNotFoundError

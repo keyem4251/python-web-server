@@ -10,9 +10,8 @@ from application.utils import get_file_content
 class NowView(BaseView):
 
     def get(self, request: Request) -> Response:
-        content_type = self.get_content_type(request)
         now_bytes = datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT').encode()
         content = get_file_content(TEMPLATE_DIR + "/now/index.html")
         content = content.replace(b"$now", now_bytes)
 
-        return Response(body=content, content_type=content_type)
+        return Response(body=content, content_type="text/html")
