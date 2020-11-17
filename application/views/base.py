@@ -1,13 +1,9 @@
-import os
-
 from application.http.request import Request
 from application.http.response import Response, HTTP_STATUS
 
 
 class BaseView:
     content_type: dict
-    root: str
-    template_dir: str
 
     def __init__(self):
         self.content_type = {
@@ -20,8 +16,6 @@ class BaseView:
             "jpeg": "image/jpeg",
             "gif": "image/gif",
         }
-        self.root = os.getcwd()
-        self.template_dir = f"{self.root}/application/templates"
 
     def get_response(self, request: Request) -> Response:
         if request.method == "GET":
