@@ -50,7 +50,7 @@ class WSGIApplication:
             print("WsgiApplication 500 Error: " + traceback.format_exc())
             return ServerErrorView().get_response(request)
 
-    def start_response_from_response(self, response: Response) -> None:
+    def set_response_to_start_response(self, response: Response) -> None:
         headers = [(k, v) for k, v in response.headers.items()]
         self.start_response(response.status, headers)
 
@@ -60,6 +60,6 @@ class WSGIApplication:
 
         request = Request(env)
         response: Response = self.create_response(request)
-        self.start_response_from_response(response)
+        self.set_response_to_start_response(response)
 
         return [response.body]
