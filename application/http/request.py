@@ -3,7 +3,7 @@ class Request:
     method: str
     path: str
     headers: dict
-    cookie: dict
+    cookies: dict
     GET: dict
     POST: dict
 
@@ -21,10 +21,10 @@ class Request:
 
         if "HTTP_COOKIE" in self.headers:
             cookies_list = self.headers["HTTP_COOKIE"].split("; ")
-            self.cookie = {}
+            self.cookies = {}
             for cookie in cookies_list:
                 key, value = cookie.split("=")
-                self.cookie[key] = value
+                self.cookies[key] = value
 
         self.GET = dict()
         self.POST = dict()
