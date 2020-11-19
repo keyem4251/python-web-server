@@ -1,4 +1,4 @@
-from application.settings import TEMPLATE_DIR
+from application.config import TEMPLATE_DIR
 from application.http.request import Request
 from application.http.response import Response, HTTP_STATUS
 from application.views.base import BaseView

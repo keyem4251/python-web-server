@@ -1,6 +1,6 @@
 import os
 
-from application.settings import TEMPLATE_DIR
+from application.config import TEMPLATE_DIR
 from application.http.response import Response, ResponseNotFound, ResponseServerError
 from application.utils import get_file_content
 
