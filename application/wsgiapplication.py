@@ -10,6 +10,7 @@ from application.views.index import IndexView
 from application.views.static import StaticView
 from application.views.errors import page_not_found, server_error
 from application.views.base import BaseView
+from application.utils import add_slash
 
 URL_VIEW = {
     "/": IndexView(),
@@ -26,11 +27,7 @@ class WSGIApplication:
     @staticmethod
     def create_response(request: Request) -> Response:
         try:
-            abspath = request.path
-            if not abspath.endswith("/") and "." not in abspath:
-                path = f"{abspath}/"
-            else:
-                path = abspath
+            path = add_slash(request.path)
 
             if path.startswith("/static/"):
                 return StaticView().get_response(request)
