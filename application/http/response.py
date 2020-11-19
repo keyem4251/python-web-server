@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Dict
+from dataclasses import dataclass
 
 from application.utils import get_date_string_utc
 
@@ -12,6 +13,7 @@ class HTTP_STATUS(Enum):
     SERVER_ERROR = "500 Internal Server Error"
 
 
+@dataclass
 class Response:
     status: HTTP_STATUS = HTTP_STATUS.OK
     headers: Dict[str, str] = None
@@ -19,16 +21,8 @@ class Response:
     body: bytes = b""
     content_type: str = None
 
-    def __init__(self, body=None, status=None, headers=None, content_type=None):
-        if body:
-            self.body = body
-
-        if status:
-            self.status = status
-
-        if headers:
-            self.headers = headers
-        else:
+    def __post_init__(self):
+        if self.headers is None:
             self.headers = {
                 "Content-type": "application/octet-stream",
                 "Date": get_date_string_utc(),
@@ -36,8 +30,8 @@ class Response:
                 "Connection": "close",
             }
 
-        if content_type:
-            self.headers["Content-type"] = content_type
+        if self.content_type is not None:
+            self.headers["Content-type"] = self.content_type
 
     def set_cookie(self, key: str, value=""):
         if self.cookies is None:
