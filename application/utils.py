@@ -16,5 +16,7 @@ def add_slash(path: str):
     return path
 
 
-def fill_parameter(content: bytes, key: str, value: str) -> bytes:
-    return content.replace(key.encode(), value.encode())
+def fill_parameters(content: bytes, items: dict) -> bytes:
+    for k, v in items.items():
+        content = content.replace(k.encode(), v.encode())
+    return content

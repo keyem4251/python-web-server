@@ -17,6 +17,7 @@ class Response:
     headers: Dict[str, str] = None
     cookies: Dict[str, str] = None
     body: bytes = b""
+    content_type: str = None
 
     def __init__(self, body=None, status=None, headers=None, content_type=None):
         if body:

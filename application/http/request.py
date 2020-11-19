@@ -3,6 +3,7 @@ class Request:
     method: str
     path: str
     headers: dict
+    cookie: dict
     GET: dict
     POST: dict
 
@@ -13,9 +14,18 @@ class Request:
         self.headers = dict()
         self.headers["CONTENT_TYPE"] = self.env["CONTENT_TYPE"]
         self.headers["CONTENT_LENGTH"] = self.env["CONTENT_LENGTH"]
+
         for k, v in self.env.items():
             if k.startswith("HTTP_"):
                 self.headers[k] = v
+
+        if "HTTP_COOKIE" in self.headers:
+            cookies_list = self.headers["HTTP_COOKIE"].split("; ")
+            self.cookie = {}
+            for cookie in cookies_list:
+                key, value = cookie.split("=")
+                self.cookie[key] = value
+
         self.GET = dict()
         self.POST = dict()
         if self.method == "GET" and self.env["QUERY_STRING"]:
