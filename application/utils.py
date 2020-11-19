@@ -14,3 +14,7 @@ def add_slash(path: str):
     if not path.endswith("/") and "." not in path:
         return f"{path}/"
     return path
+
+
+def fill_parameter(content: bytes, key: str, value: str) -> bytes:
+    return content.replace(key.encode(), value.encode())

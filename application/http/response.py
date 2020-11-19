@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Dict
 
 from application.utils import get_date_string_utc
 
@@ -13,7 +14,8 @@ class HTTP_STATUS(Enum):
 
 class Response:
     status: HTTP_STATUS = HTTP_STATUS.OK
-    headers: dict
+    headers: Dict[str, str] = None
+    cookies: Dict[str, str] = None
     body: bytes = b""
 
     def __init__(self, body=None, status=None, headers=None, content_type=None):
@@ -35,6 +37,11 @@ class Response:
 
         if content_type:
             self.headers["Content-type"] = content_type
+
+    def set_cookie(self, key: str, value=""):
+        if self.cookies is None:
+            self.cookies = {}
+        self.cookies[key] = value
 
 
 class ResponseNotFound(Response):
