@@ -7,6 +7,7 @@ class Request:
     env: dict
     method: str = ""
     path: str = ""
+    body: bytes = b""
     headers: dict = None
     cookies: dict = None
     GET: Optional[dict] = None
@@ -15,15 +16,18 @@ class Request:
     def __post_init__(self):
         self.method = self.env["REQUEST_METHOD"]
         self.path = self.env["PATH_INFO"]
+        self.body = self.env["wsgi.input"].read()
 
         if self.headers is None:
             self.headers = {}
         self.headers["CONTENT_TYPE"] = self.env["CONTENT_TYPE"]
         self.headers["CONTENT_LENGTH"] = self.env["CONTENT_LENGTH"]
 
-        if "HTTP_COOKIE" in self.headers:
-            cookies_list = self.headers["HTTP_COOKIE"].split("; ")
+        if self.cookies is None:
             self.cookies = {}
+
+        if "HTTP_COOKIE" in self.env:
+            cookies_list = self.env["HTTP_COOKIE"].split("; ")
             for cookie in cookies_list:
                 key, value = cookie.split("=")
                 self.cookies[key] = value
@@ -43,7 +47,3 @@ class Request:
             for pair in self.body.decode().split("&"):
                 key, value = pair.split("=")
                 self.POST[key] = value
-
-    @property
-    def body(self) -> bytes:
-        return self.env["wsgi.input"].read()

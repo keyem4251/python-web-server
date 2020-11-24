@@ -9,6 +9,7 @@ from application.views.now import NowView
 from application.views.index import IndexView
 from application.views.static import StaticView
 from application.views.cookie import SetCookieView
+from application.views.user import UserView
 from application.views.errors import page_not_found, server_error
 from application.views.base import BaseView
 from application.utils import add_slash
@@ -19,6 +20,7 @@ URL_VIEW = {
     "/headers/": HeadersView(),
     "/parameters/": ParametersView(),
     "/set_cookie/": SetCookieView(),
+    "/user/": UserView(),
 }
 
 
@@ -30,7 +32,6 @@ class WSGIApplication:
     def create_response(request: Request) -> Response:
         try:
             path = add_slash(request.path)
-
             if path.startswith("/static/"):
                 return StaticView().get_response(request)
 
